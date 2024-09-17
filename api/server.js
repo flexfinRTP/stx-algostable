@@ -1,18 +1,16 @@
 // server.js
-const express = require('express');
-const { initRebaseService } = require('./rebase-service');
-const { initPriceFeedService } = require('./price-feed-service');
-const { initChallengeService } = require('./challenge-service');
+import express from 'express';
+import { initRebaseService } from './rebase-service.js';
+import { initPriceFeedService } from './price-feed-service.js';
 
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 app.use(express.json());
 
 // Initialize services
 initRebaseService();
 initPriceFeedService();
-initChallengeService();
 
 // API routes
 app.get('/api/price', (req, res) => {
@@ -21,7 +19,7 @@ app.get('/api/price', (req, res) => {
 });
 
 app.get('/api/total-supply', (req, res) => {
-  // TODO: Implement total supply retrieval from FlexSTX contract
+  // TODO: Implement total supply retrieval from algostable contract
   res.json({ totalSupply: 1000000 });
 });
 
@@ -30,12 +28,8 @@ app.get('/api/staking-stats', (req, res) => {
   res.json({ totalStaked: 500000, apy: 10 });
 });
 
-app.get('/api/challenges', (req, res) => {
-  // TODO: Implement challenge list retrieval from Challenge System contract
-  res.json({ challenges: [] });
-});
 
 // Start the server
 app.listen(port, () => {
-  console.log(`FlexSTX backend server running on port ${port}`);
+  console.log(` 🚀 Libre backend server running on port ${port} `);
 });

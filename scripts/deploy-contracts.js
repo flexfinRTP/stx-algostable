@@ -27,11 +27,10 @@ async function deployContract(contractName) {
 
 async function main() {
   try {
-    await deployContract('flexstx-token');
+    await deployContract('algostable-token');
     await deployContract('staking-pool');
     await deployContract('rebase-controller');
     await deployContract('price-oracle');
-    await deployContract('challenge-system');
     console.log('All contracts deployed successfully');
   } catch (error) {
     console.error('Deployment error:', error);

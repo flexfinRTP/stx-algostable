@@ -1,4 +1,4 @@
-;; FlexSTX Token Contract
+;; algostable Token Contract
 
 ;; Define constants
 (define-constant contract-owner tx-sender)
@@ -15,7 +15,7 @@
 
 ;; Read-only functions
 (define-read-only (get-name)
-  (ok "FlexSTX"))
+  (ok "algostable"))
 
 (define-read-only (get-symbol)
   (ok "FSTX"))

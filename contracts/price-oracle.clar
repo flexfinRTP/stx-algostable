@@ -1,4 +1,4 @@
-;; FlexSTX Price Oracle Contract
+;; algostable Price Oracle Contract
 
 ;; Define constants
 (define-constant contract-owner tx-sender)

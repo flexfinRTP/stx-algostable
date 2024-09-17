@@ -1,14 +1,14 @@
 // price-feed-service.js
-const axios = require('axios');
-const { connectWebSocket } = require('@stacks/blockchain-api-client');
-const { StacksMainnet } = require('@stacks/network');
+import axios from 'axios';
+import { StacksMainnet } from '@stacks/network';
+import { callReadOnlyFunction, cvToJSON } from '@stacks/transactions';
 
 const PRICE_UPDATE_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 async function fetchPrice() {
   try {
     // TODO: Implement actual price fetching from a reliable source
-    const response = await axios.get('https://api.example.com/flexstx-price');
+    const response = await axios.get('https://api.example.com/algostable-price');
     return response.data.price;
   } catch (error) {
     console.error('Error fetching price:', error);
@@ -20,10 +20,22 @@ async function updatePrice() {
   const price = await fetchPrice();
   if (price !== null) {
     try {
-      // TODO: Implement logic to call the update-price function on the Price Oracle contract
-      console.log('Updating price to:', price);
-      // Example: await contractCall('price-oracle', 'update-price', [price]);
-      console.log('Price updated successfully');
+      const network = new StacksMainnet();
+      const contractAddress = 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9';
+      const contractName = 'price-oracle';
+      const functionName = 'update-price';
+      const functionArgs = [price]; // Adjust this based on your contract's requirements
+
+      const result = await callReadOnlyFunction({
+        network,
+        contractAddress,
+        contractName,
+        functionName,
+        functionArgs,
+        senderAddress: contractAddress, // This should be the address that's authorized to update the price
+      });
+
+      console.log('Price update result:', cvToJSON(result));
     } catch (error) {
       console.error('Error updating price on-chain:', error);
     }
@@ -31,17 +43,8 @@ async function updatePrice() {
 }
 
 function initPriceFeedService() {
-  // Initialize connection to Stacks blockchain
-  const network = new StacksMainnet();
-  const client = connectWebSocket(network);
-
-  client.subscribeBlockUpdates((block) => {
-    console.log('New block received:', block.height);
-    // TODO: Check if it's time to update the price based on the block height
-  });
-
   // Schedule regular price updates
   setInterval(updatePrice, PRICE_UPDATE_INTERVAL);
 }
 
-module.exports = { initPriceFeedService };
+export { initPriceFeedService };

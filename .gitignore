@@ -11,3 +11,15 @@ coverage
 *.info
 costs-reports.json
 node_modules
+.env
+next/
+.next/
+.next/cache
+.next/trace
+.next/build-manifest.json
+.next/cache/
+.next/trace/
+.next/build-manifest.json
+.next/cache/
+.next/trace/
+.next/build-manifest.json

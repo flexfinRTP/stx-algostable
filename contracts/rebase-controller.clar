@@ -1,4 +1,4 @@
-;; FlexSTX Rebase Controller Contract
+;; algostable Rebase Controller Contract
 
 ;; Define constants
 (define-constant contract-owner tx-sender)
@@ -33,7 +33,7 @@
     (let ((price-deviation (abs (- current-price (var-get target-price)))))
       (if (> price-deviation (var-get price-deviation-threshold))
           (let ((rebase-factor (/ (* (var-get target-price) u1000000) current-price)))
-            (try! (contract-call? .flexstx-token rebase rebase-factor))
+            (try! (contract-call? .algostable-token rebase rebase-factor))
             (var-set last-rebase-time current-time)
             (ok rebase-factor))
           (ok u1000000)))))

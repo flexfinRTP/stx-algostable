@@ -1,4 +1,4 @@
-;; FlexSTX Staking Pool Contract
+;; algostable Staking Pool Contract
 
 ;; Define constants
 (define-constant contract-owner tx-sender)
@@ -29,9 +29,9 @@
 
 ;; Public functions
 (define-public (stake (amount uint))
-  (let ((current-balance (unwrap-panic (contract-call? .flexstx-token get-balance tx-sender))))
+  (let ((current-balance (unwrap-panic (contract-call? .algostable-token get-balance tx-sender))))
     (asserts! (>= current-balance amount) err-insufficient-balance)
-    (try! (contract-call? .flexstx-token transfer (as-contract tx-sender) amount))
+    (try! (contract-call? .algostable-token transfer (as-contract tx-sender) amount))
     (map-set staked-balances tx-sender (+ (default-to u0 (map-get? staked-balances tx-sender)) amount))
     (var-set total-staked (+ (var-get total-staked) amount))
     (map-set last-claim-time tx-sender (unwrap-panic (get-block-info? time (- block-height u1))))
@@ -40,14 +40,14 @@
 (define-public (unstake (amount uint))
   (let ((staked-balance (default-to u0 (map-get? staked-balances tx-sender))))
     (asserts! (>= staked-balance amount) err-not-staked)
-    (try! (as-contract (contract-call? .flexstx-token transfer tx-sender amount)))
+    (try! (as-contract (contract-call? .algostable-token transfer tx-sender amount)))
     (map-set staked-balances tx-sender (- staked-balance amount))
     (var-set total-staked (- (var-get total-staked) amount))
     (ok true)))
 
 (define-public (claim-rewards)
   (let ((rewards (unwrap-panic (get-unclaimed-rewards tx-sender))))
-    (try! (as-contract (contract-call? .flexstx-token transfer tx-sender rewards)))
+    (try! (as-contract (contract-call? .algostable-token transfer tx-sender rewards)))
     (map-set last-claim-time tx-sender (unwrap-panic (get-block-info? time (- block-height u1))))
     (ok rewards)))
 

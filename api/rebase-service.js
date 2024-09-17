@@ -1,15 +1,29 @@
 // rebase-service.js
-const { connectWebSocket } = require('@stacks/blockchain-api-client');
-const { StacksMainnet } = require('@stacks/network');
+import { StacksMainnet } from '@stacks/network';
+import { callReadOnlyFunction, cvToJSON } from '@stacks/transactions';
 
 const REBASE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+const BLOCK_POLLING_INTERVAL = 60 * 1000; // 1 minute in milliseconds
+
+let lastProcessedBlock = 0;
 
 async function performRebase() {
   try {
-    // TODO: Implement logic to call the rebase function on the Rebase Controller contract
-    console.log('Performing rebase...');
-    // Example: await contractCall('rebase-controller', 'rebase', []);
-    console.log('Rebase completed successfully');
+    const network = new StacksMainnet();
+    const contractAddress = 'SP2PABAF9FTAJYNFZH93XENAJ8FVY99RRM50D2JG9';
+    const contractName = 'rebase-controller';
+    const functionName = 'rebase';
+
+    const result = await callReadOnlyFunction({
+      network,
+      contractAddress,
+      contractName,
+      functionName,
+      functionArgs: [],
+      senderAddress: contractAddress, // This should be the address that's authorized to perform rebases
+    });
+
+    console.log('Rebase result:', cvToJSON(result));
   } catch (error) {
     console.error('Error performing rebase:', error);
   }
@@ -28,17 +42,28 @@ function scheduleNextRebase() {
   console.log(`Next rebase scheduled in ${delay / 1000 / 60} minutes`);
 }
 
-function initRebaseService() {
-  // Initialize connection to Stacks blockchain
-  const network = new StacksMainnet();
-  const client = connectWebSocket(network);
+async function checkNewBlocks() {
+  try {
+    const network = new StacksMainnet();
+    const response = await fetch(`${network.coreApiUrl}/v2/info`);
+    const info = await response.json();
+    const latestBlock = info.stacks_tip_height;
 
-  client.subscribeBlockUpdates((block) => {
-    console.log('New block received:', block.height);
-    // TODO: Check if it's time to perform a rebase based on the block height
-  });
+    if (latestBlock > lastProcessedBlock) {
+      console.log('New block received:', latestBlock);
+      // TODO: Check if it's time to perform a rebase based on the block height
+      lastProcessedBlock = latestBlock;
+    }
+  } catch (error) {
+    console.error('Error checking for new blocks:', error);
+  }
+}
+
+function initRebaseService() {
+  // Set up periodic block checking
+  setInterval(checkNewBlocks, BLOCK_POLLING_INTERVAL);
 
   scheduleNextRebase();
 }
 
-module.exports = { initRebaseService };
+export { initRebaseService };
