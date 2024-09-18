@@ -32,8 +32,8 @@ Libre is a decentralized finance (DeFi) project built on the Stacks blockchain, 
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/algostable.git
-   cd algostable
+   git clone https://github.com/yourusername/libre.git
+   cd libre
    ```
 
 2. Install dependencies:
@@ -42,17 +42,36 @@ Libre is a decentralized finance (DeFi) project built on the Stacks blockchain, 
    ```
 
 3. Set up environment variables:
-   Create a `.env.local` file in the root directory and add:
+   Create a `.env` file in the root directory and add:
    ```
    NEXT_PUBLIC_API_URL=http://localhost:3001
    ```
 
 4. Start the development server:
    ```
+   cd api
+   npm run dev
+   cd client
    npm run dev
    ```
 
 5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Testing
+
+1. Run `node deploy-contracts.js` to deploy all contracts to the Stacks network.
+
+2. Update the .env file with the newly deployed contract addresses.
+
+3. Run `node setup-script.js` to initialize the contracts with correct parameters and permissions.
+
+4. Run the Clarinet tests to ensure basic functionality is working as expected.
+
+```
+cd contracts
+clarinet test tests/libre-token-test.ts
+clarinet test tests/price-oracle-test.ts
+```
 
 ## Smart Contracts
 
@@ -101,3 +120,26 @@ Libre is a decentralized finance (DeFi) project built on the Stacks blockchain, 
 2. User deposits STX or sBTC
 3. User receives a proportional amount of Libre tokens
 4. Rebasing occurs automatically, adjusting user's Libre balance without requiring signatures
+
+## OPUS Calculation
+
+The Libre token price is calculated using the OPUS oracle. The OPUS oracle is a price oracle that provides price data for a variety of assets. The Libre token price is calculated using the following formula:
+
+```
+Libre Price = 100 * (1 + (OPUS Price - 1) / 2)
+``` 
+
+How this number was calculated:
+The Bureau of Labor Statistics (BLS) maintains the CPI. They collect price data for a basket of goods and services in 75 urban areas across the country and from about 23,000 retail and service establishments. Housing price data is collected from about 50,000 landlords or tenants. The CPI is then calculated by comparing the cost of this fixed basket of goods and services between two periods.
+
+To get our specific ratio, I used the BLS inflation calculator, inputting $1 for January 2009 and calculating its equivalent value for August 2024 (the latest available data as of my knowledge cutoff). The result shows how much the purchasing power of the dollar has changed over this period due to inflation.
+
+It's important to note that this is an average measure and may not reflect the exact price changes for specific goods or in all locations. Additionally, please be aware that my knowledge cutoff is in April 2024, so for the most up-to-date and accurate information, you should check the BLS website directly.
+
+## Staking
+
+Users can stake their Libre tokens to receive staking rewards. The staking rewards are distributed to users based on the amount of Libre tokens they have staked. The staking rewards are distributed every 24 hours.
+
+## Withdrawals
+
+Users can withdraw their staked Libre tokens at any time. The staked Libre tokens are burned and the user's balance is updated accordingly.

@@ -1,40 +1,40 @@
-// scripts/deploy-contracts.js
-const { StacksTestnet } = require('@stacks/network');
-const { makeContractDeploy } = require('@stacks/transactions');
-const fs = require('fs').promises;
-const path = require('path');
+// deploy-contracts.js
+require('dotenv').config();
+const { makeContractDeploy, broadcastTransaction, AnchorMode } = require('@stacks/transactions');
+const { StacksMainnet, StacksTestnet } = require('@stacks/network');
+const fs = require('fs');
 
-const network = new StacksTestnet();
-const privateKey = process.env.STACKS_PRIVATE_KEY;
+const network = process.env.STACKS_NETWORK === 'mainnet' ? new StacksMainnet() : new StacksTestnet();
+const privateKey = process.env.DEPLOYER_PRIVATE_KEY;
 
-async function deployContract(contractName) {
-  const contractSource = await fs.readFile(
-    path.join(__dirname, `../contracts/${contractName}.clar`),
-    'utf8'
-  );
-
-  const transaction = await makeContractDeploy({
+async function deployContract(contractName, filePath) {
+  const codeBody = fs.readFileSync(filePath).toString();
+  
+  const txOptions = {
     contractName,
-    codeBody: contractSource,
+    codeBody,
     senderKey: privateKey,
     network,
-  });
+    anchorMode: AnchorMode.Any,
+  };
 
-  const result = await network.broadcastTransaction(transaction);
-  console.log(`${contractName} deployment result:`, result);
-  return result;
+  const transaction = await makeContractDeploy(txOptions);
+  const broadcastResponse = await broadcastTransaction(transaction, network);
+  console.log(`Deployed ${contractName}:`, broadcastResponse);
+  return broadcastResponse;
 }
 
 async function main() {
-  try {
-    await deployContract('algostable-token');
-    await deployContract('staking-pool');
-    await deployContract('rebase-controller');
-    await deployContract('price-oracle');
-    console.log('All contracts deployed successfully');
-  } catch (error) {
-    console.error('Deployment error:', error);
+  const contracts = [
+    { name: 'libre', file: './contracts/libre.clar' },
+    { name: 'price-oracle', file: './contracts/price-oracle.clar' },
+    { name: 'rebase-controller', file: './contracts/rebase-controller.clar' },
+    { name: 'staking-pool', file: './contracts/staking-pool.clar' },
+  ];
+
+  for (const contract of contracts) {
+    await deployContract(contract.name, contract.file);
   }
 }
 
-main();
+main().catch(console.error);

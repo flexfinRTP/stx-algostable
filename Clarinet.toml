@@ -1,12 +1,21 @@
 [project]
-name = "algostable"
-description = ""
-authors = []
+name = "libre"
+description = "Algorithmic stablecoin system built on Stacks"
+authors = ["Your Name <your.email@example.com>"]
 telemetry = false
 cache_dir = "./.cache"
 
-# [contracts.counter]
-# path = "contracts/counter.clar"
+[contracts.libre]
+path = "contracts/libre.clar"
+
+[contracts.price-oracle]
+path = "contracts/price-oracle.clar"
+
+[contracts.rebase-controller]
+path = "contracts/rebase-controller.clar"
+
+[contracts.staking-pool]
+path = "contracts/staking-pool.clar"
 
 [repl.analysis]
 passes = ["check_checker"]
@@ -18,4 +27,4 @@ check_checker = { trusted_sender = false, trusted_caller = false, callee_filter 
 # callee_filter: if true, untrusted data may be passed into a private function without a
 # warning, if it gets checked inside. This check will also propagate up to the
 # caller.
-# More informations: https://www.hiro.so/blog/new-safety-checks-in-clarinet
+# More information: https://www.hiro.so/blog/new-safety-checks-in-clarinet

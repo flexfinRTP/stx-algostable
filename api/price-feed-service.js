@@ -8,7 +8,7 @@ const PRICE_UPDATE_INTERVAL = 15 * 60 * 1000; // 15 minutes in milliseconds
 async function fetchPrice() {
   try {
     // TODO: Implement actual price fetching from a reliable source
-    const response = await axios.get('https://api.example.com/algostable-price');
+    const response = await axios.get('https://api.example.com/libre-price');
     return response.data.price;
   } catch (error) {
     console.error('Error fetching price:', error);
