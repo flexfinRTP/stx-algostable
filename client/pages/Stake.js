@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Box, VStack, Heading, Input, Button, Text, Stat, StatLabel, StatNumber, useToast } from '@chakra-ui/react';
 import { useConnect } from '@stacks/connect-react';
 import { stake, unstake, claimRewards, fetchStakedAmount, fetchRewardsRate } from '../services/api';
 import Layout from "../components/Layout";
@@ -8,12 +9,13 @@ function Stake() {
   const [stakedAmount, setStakedAmount] = useState(0);
   const [stakeInput, setStakeInput] = useState('');
   const [rewardsRate, setRewardsRate] = useState(0);
+  const toast = useToast();
 
   useEffect(() => {
-    // if (authentication.isSignedIn()) {
+    if (authentication.isSignedIn()) {
       fetchUserStakedAmount();
       fetchCurrentRewardsRate();
-    // }
+    }
   }, [authentication]);
 
   const fetchUserStakedAmount = async () => {
@@ -30,76 +32,131 @@ function Stake() {
 
   const handleStake = async () => {
     if (!authentication.isSignedIn()) {
-      alert('Please sign in to stake.');
+      toast({
+        title: "Not signed in",
+        description: "Please sign in to stake.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
       return;
     }
     try {
       await stake(parseInt(stakeInput), authentication.stxAddress);
-      alert('Staking transaction submitted. Please wait for it to be confirmed.');
+      toast({
+        title: "Staking transaction submitted",
+        description: "Please wait for it to be confirmed.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       await fetchUserStakedAmount();
       setStakeInput('');
     } catch (error) {
       console.error('Staking error:', error);
-      alert('Failed to stake. Please try again.');
+      toast({
+        title: "Staking failed",
+        description: "Failed to stake. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   const handleUnstake = async () => {
     if (!authentication.isSignedIn()) {
-      alert('Please sign in to unstake.');
+      toast({
+        title: "Not signed in",
+        description: "Please sign in to unstake.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
       return;
     }
     try {
       await unstake(parseInt(stakeInput), authentication.stxAddress);
-      alert('Unstaking transaction submitted. Please wait for it to be confirmed.');
+      toast({
+        title: "Unstaking transaction submitted",
+        description: "Please wait for it to be confirmed.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       await fetchUserStakedAmount();
       setStakeInput('');
     } catch (error) {
       console.error('Unstaking error:', error);
-      alert('Failed to unstake. Please try again.');
+      toast({
+        title: "Unstaking failed",
+        description: "Failed to unstake. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   const handleClaimRewards = async () => {
     if (!authentication.isSignedIn()) {
-      alert('Please sign in to claim rewards.');
+      toast({
+        title: "Not signed in",
+        description: "Please sign in to claim rewards.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
       return;
     }
     try {
       await claimRewards(authentication.stxAddress);
-      alert('Claim rewards transaction submitted. Please wait for it to be confirmed.');
+      toast({
+        title: "Claim rewards transaction submitted",
+        description: "Please wait for it to be confirmed.",
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       await fetchUserStakedAmount();
     } catch (error) {
       console.error('Claiming rewards error:', error);
-      alert('Failed to claim rewards. Please try again.');
+      toast({
+        title: "Claiming rewards failed",
+        description: "Failed to claim rewards. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   return (
     <Layout>
-      <div className="stake">
-        <h1>Stake Libre</h1>
-        <div>
-          <input
-            type="number"
-            value={stakeInput}
-            onChange={(e) => setStakeInput(e.target.value)}
-            placeholder="Amount to stake"
-          />
-                    <div><br /></div>
-          <button onClick={handleStake}>Stake</button>
-          <div><br /></div>
-        </div>
-        <div>
-          <p>Currently Staked: {stakedAmount} Libre</p>
-          <div><br /></div>
-          <p>Current Rewards Rate: {rewardsRate}% APY</p>
-          <div><br /></div>
-          <button onClick={handleUnstake}>Unstake</button>
-          <div><br /></div>
-          <button onClick={handleClaimRewards}>Claim Rewards</button>
-        </div>
-      </div>
+      <Box maxWidth="container.md" margin="auto" mt={8}>
+        <VStack spacing={8} align="stretch">
+          <Heading as="h1" size="xl">Stake Libre</Heading>
+          <Box>
+            <Input
+              type="number"
+              value={stakeInput}
+              onChange={(e) => setStakeInput(e.target.value)}
+              placeholder="Amount to stake"
+            />
+            <Button colorScheme="blue" onClick={handleStake} mt={4}>Stake</Button>
+          </Box>
+          <Stat>
+            <StatLabel>Currently Staked</StatLabel>
+            <StatNumber>{stakedAmount} Libre</StatNumber>
+          </Stat>
+          <Stat>
+            <StatLabel>Current Rewards Rate</StatLabel>
+            <StatNumber>{rewardsRate}% APY</StatNumber>
+          </Stat>
+          <Button colorScheme="green" onClick={handleUnstake}>Unstake</Button>
+          <Button colorScheme="purple" onClick={handleClaimRewards}>Claim Rewards</Button>
+        </VStack>
+      </Box>
     </Layout>
   );
 }

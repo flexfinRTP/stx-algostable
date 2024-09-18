@@ -1,8 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Box, Heading, Text, Stat, StatLabel, StatNumber, StatGroup, VStack, Button } from '@chakra-ui/react'
+import { Box, VStack, Heading, Text, Stat, StatLabel, StatNumber, StatGroup, Button, useColorModeValue } from '@chakra-ui/react'
+import dynamic from 'next/dynamic'
 import Layout from '../components/Layout'
 import DepositWithdraw from '../components/DepositWithdraw'
-import { fetchDashboardData, fetchUserBalance, fetchRebaseHistory } from '../services/api'
+import { fetchDashboardData, fetchUserBalance, fetchRebaseHistory, fetchPriceHistory } from '../services/api'
+
+// Dynamically import the Chart component with SSR disabled
+const Chart = dynamic(() => import('react-chartjs-2').then((mod) => mod.Line), { ssr: false })
 
 function HomePage() {
   const [isSignedIn, setIsSignedIn] = useState(false)
@@ -14,10 +18,15 @@ function HomePage() {
   })
   const [userBalance, setUserBalance] = useState(0)
   const [rebaseHistory, setRebaseHistory] = useState([])
+  const [priceHistory, setPriceHistory] = useState([])
+
+  const bgColor = useColorModeValue('gray.50', 'gray.900')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
 
   useEffect(() => {
     checkWalletConnection()
     loadDashboardData()
+    loadPriceHistory()
   }, [])
 
   useEffect(() => {
@@ -53,6 +62,11 @@ function HomePage() {
     setRebaseHistory(history)
   }
 
+  const loadPriceHistory = async () => {
+    const history = await fetchPriceHistory()
+    setPriceHistory(history)
+  }
+
   const handleConnectWallet = async () => {
     if (typeof window !== 'undefined' && window.LeatherProvider) {
       try {
@@ -66,16 +80,47 @@ function HomePage() {
     }
   }
 
+  const chartData = {
+    labels: priceHistory.map(item => new Date(item.timestamp).toLocaleDateString()),
+    datasets: [
+      {
+        label: 'Libre Price',
+        data: priceHistory.map(item => item.price),
+        fill: false,
+        borderColor: 'rgb(75, 192, 192)',
+        tension: 0.1
+      }
+    ]
+  }
+
+  const chartOptions = {
+    scales: {
+      x: {
+        type: 'category',
+        title: {
+          display: true,
+          text: 'Date'
+        }
+      },
+      y: {
+        title: {
+          display: true,
+          text: 'Price'
+        }
+      }
+    }
+  }
+
   return (
     <Layout>
-      <VStack spacing={8} align="stretch">
-        <Heading as="h1" size="xl">Welcome to Libre</Heading>
+      <VStack spacing={8} align="stretch" bg={bgColor} p={8} borderRadius="lg" boxShadow="xl">
+        <Heading as="h1" size="xl">Libre Dashboard</Heading>
         {!isSignedIn ? (
-          <Button onClick={handleConnectWallet}>Connect Leather Wallet</Button>
+          <Button colorScheme="blue" onClick={handleConnectWallet}>Connect Leather Wallet</Button>
         ) : (
           <>
             <Text>Connected: {userAddress}</Text>
-            <Text>Your Libre Balance: {userBalance}</Text>
+            <Text fontWeight="bold">Your Libre Balance: {userBalance.toFixed(2)} Libre</Text>
           </>
         )}
         <StatGroup>
@@ -92,15 +137,19 @@ function HomePage() {
             <StatNumber>{dashboardData.totalStaked.toLocaleString()} Libre</StatNumber>
           </Stat>
         </StatGroup>
+        <Box borderWidth={1} borderColor={borderColor} p={4} borderRadius="md">
+          <Heading as="h2" size="md" mb={4}>Price History</Heading>
+          {typeof window !== 'undefined' && <Chart data={chartData} options={chartOptions} />}
+        </Box>
         {isSignedIn && (
           <>
             <DepositWithdraw userAddress={userAddress} />
-            <Box>
-              <Heading as="h2" size="lg">Rebase History</Heading>
+            <Box borderWidth={1} borderColor={borderColor} p={4} borderRadius="md">
+              <Heading as="h2" size="md" mb={4}>Rebase History</Heading>
               {rebaseHistory.map((rebase, index) => (
                 <Text key={index}>
                   Date: {new Date(rebase.timestamp).toLocaleString()}, 
-                  Change: {rebase.change > 0 ? '+' : ''}{rebase.change}%
+                  Change: {rebase.change > 0 ? '+' : ''}{rebase.change.toFixed(2)}%
                 </Text>
               ))}
             </Box>

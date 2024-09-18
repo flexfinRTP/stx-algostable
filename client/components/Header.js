@@ -1,54 +1,45 @@
-import { Box, Flex, Button, Heading, Text } from '@chakra-ui/react'
+import { Box, Flex, Button, Heading, Text, useColorModeValue } from '@chakra-ui/react'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useConnect } from '@stacks/connect-react'
 
 function Header() {
-  const [isSignedIn, setIsSignedIn] = useState(false)
+  const { authentication, signOut } = useConnect()
   const [userAddress, setUserAddress] = useState('')
+  const [isSignedIn, setIsSignedIn] = useState(false)
 
   useEffect(() => {
-    checkWalletConnection()
-  }, [])
-
-  const checkWalletConnection = async () => {
-    if (typeof window !== 'undefined' && window.LeatherProvider) {
-      try {
-        const response = await window.LeatherProvider.request('getAddresses')
-        if (response.result.addresses.length > 0) {
-          setIsSignedIn(true)
-          setUserAddress(response.result.addresses.find(addr => addr.symbol === 'STX').address)
-        }
-      } catch (error) {
-        console.error('Failed to get addresses:', error)
-      }
+    if (authentication && authentication.isSignedIn()) {
+      setIsSignedIn(true)
+      setUserAddress(authentication.stxAddress)
+    } else {
+      setIsSignedIn(false)
+      setUserAddress('')
     }
-  }
+  }, [authentication])
 
-  const handleSignIn = async () => {
+  const handleSignIn = () => {
     if (typeof window !== 'undefined' && window.LeatherProvider) {
-      try {
-        await window.LeatherProvider.request('open')
-        checkWalletConnection()
-      } catch (error) {
-        console.error('Failed to open Leather:', error)
-      }
+      window.LeatherProvider.request('open')
     } else {
       alert('Please install Leather wallet extension')
     }
   }
 
   const handleSignOut = () => {
+    signOut()
     setIsSignedIn(false)
     setUserAddress('')
-    // Note: Leather doesn't have a built-in sign-out method. 
-    // This just clears the state in your app.
   }
 
+  const bg = useColorModeValue('white', 'gray.800')
+  const borderColor = useColorModeValue('gray.200', 'gray.700')
+
   return (
-    <Box bg="gray.100" py={4}>
-      <Flex maxW="container.xl" mx="auto" alignItems="center" justifyContent="space-between">
+    <Box bg={bg} borderBottom={1} borderStyle={'solid'} borderColor={borderColor}>
+      <Flex maxW="container.xl" mx="auto" alignItems="center" justifyContent="space-between" py={4} px={8}>
         <Heading as="h1" size="lg">
-        Libre
+          Libre
         </Heading>
         <Flex alignItems="center">
           <Link href="/" passHref>

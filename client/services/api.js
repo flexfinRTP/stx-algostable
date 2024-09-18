@@ -115,7 +115,7 @@ export const fetchUserDeposits = async (address) => {
     return response.data.deposits
   } catch (error) {
     console.error('Error fetching user deposits:', error)
-    return []
+    return { STX: 0, sBTC: 0 }
   }
 }
 
@@ -125,6 +125,16 @@ export const fetchRebaseHistory = async (address) => {
     return response.data.rebaseHistory
   } catch (error) {
     console.error('Error fetching rebase history:', error)
+    return []
+  }
+}
+
+export const fetchPriceHistory = async () => {
+  try {
+    const response = await api.get('/api/price-history')
+    return response.data.priceHistory
+  } catch (error) {
+    console.error('Error fetching price history:', error)
     return []
   }
 }

@@ -40,7 +40,7 @@
     (let ((price-deviation (abs (- current-price (var-get target-price)))))
       (if (> price-deviation (var-get price-deviation-threshold))
           (let ((rebase-factor (/ (* (var-get target-price) u1000000) current-price)))
-            (try! (contract-call? .libre-token rebase rebase-factor))
+            (try! (contract-call? .libre rebase rebase-factor))
             (var-set last-rebase-time current-time)
             (ok rebase-factor))
           (ok u1000000)))))

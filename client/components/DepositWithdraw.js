@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { Box, VStack, Heading, Input, Button, Text, useToast } from '@chakra-ui/react';
 import { depositAsset, withdrawAsset, fetchUserDeposits } from '../services/api';
 
 function DepositWithdraw({ userAddress }) {
   const [deposits, setDeposits] = useState({ STX: 0, sBTC: 0 });
   const [inputAmount, setInputAmount] = useState('');
   const [selectedAsset, setSelectedAsset] = useState('STX');
+  const toast = useToast();
 
   useEffect(() => {
     if (userAddress) {
@@ -21,71 +23,99 @@ function DepositWithdraw({ userAddress }) {
 
   const handleDeposit = async () => {
     if (!userAddress) {
-      alert('Please connect your Leather wallet to deposit.');
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect your Leather wallet to deposit.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
       return;
     }
     try {
       await depositAsset(parseFloat(inputAmount), selectedAsset, userAddress);
-      alert(`Successfully deposited ${inputAmount} ${selectedAsset}`);
+      toast({
+        title: "Deposit successful",
+        description: `Successfully deposited ${inputAmount} ${selectedAsset}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       setInputAmount('');
       await fetchUserDepositsData();
     } catch (error) {
       console.error('Deposit error:', error);
-      alert('Failed to deposit. Please try again.');
+      toast({
+        title: "Deposit failed",
+        description: "Failed to deposit. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   const handleWithdraw = async () => {
     if (!userAddress) {
-      alert('Please connect your Leather wallet to withdraw.');
+      toast({
+        title: "Wallet not connected",
+        description: "Please connect your Leather wallet to withdraw.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
       return;
     }
     try {
       await withdrawAsset(parseFloat(inputAmount), selectedAsset, userAddress);
-      alert(`Successfully withdrew ${inputAmount} ${selectedAsset}`);
+      toast({
+        title: "Withdrawal successful",
+        description: `Successfully withdrew ${inputAmount} ${selectedAsset}`,
+        status: "success",
+        duration: 3000,
+        isClosable: true,
+      });
       setInputAmount('');
       await fetchUserDepositsData();
     } catch (error) {
       console.error('Withdraw error:', error);
-      alert('Failed to withdraw. Please try again.');
+      toast({
+        title: "Withdrawal failed",
+        description: "Failed to withdraw. Please try again.",
+        status: "error",
+        duration: 3000,
+        isClosable: true,
+      });
     }
   };
 
   return (
-    <div className="deposit-withdraw-container">
-      <h2>Deposit or Withdraw Assets</h2>
-      <div className="asset-selector">
-        <button 
-          className={selectedAsset === 'STX' ? 'selected' : ''} 
-          onClick={() => setSelectedAsset('STX')}
-        >
-          STX
-        </button>
-        <button 
-          className={selectedAsset === 'sBTC' ? 'selected' : ''} 
-          onClick={() => setSelectedAsset('sBTC')}
-        >
-          sBTC
-        </button>
-      </div>
-      <input
-        type="number"
-        value={inputAmount}
-        onChange={(e) => setInputAmount(e.target.value)}
-        placeholder={`Enter ${selectedAsset} amount`}
-      />
-      <div className="action-buttons">
-        <button onClick={handleDeposit}>Deposit</button>
-        <div><br /></div>
-        <button onClick={handleWithdraw}>Withdraw</button>
-        <div><br /></div>
-      </div>
-      <div className="deposits-info">
-        <h3>Your Deposits</h3>
-        <p>STX: {deposits.STX}</p>
-        <p>sBTC: {deposits.sBTC}</p>
-      </div>
-    </div>
+    <Box borderWidth={1} borderRadius="lg" p={6}>
+      <VStack spacing={4} align="stretch">
+        <Heading size="md">Deposit or Withdraw Assets</Heading>
+        <Box>
+          <Button colorScheme={selectedAsset === 'STX' ? 'blue' : 'gray'} onClick={() => setSelectedAsset('STX')} mr={2}>
+            STX
+          </Button>
+          <Button colorScheme={selectedAsset === 'sBTC' ? 'blue' : 'gray'} onClick={() => setSelectedAsset('sBTC')}>
+            sBTC
+          </Button>
+        </Box>
+        <Input
+          type="number"
+          value={inputAmount}
+          onChange={(e) => setInputAmount(e.target.value)}
+          placeholder={`Enter ${selectedAsset} amount`}
+        />
+        <Button colorScheme="green" onClick={handleDeposit}>Deposit</Button>
+        <Button colorScheme="red" onClick={handleWithdraw}>Withdraw</Button>
+        <Box>
+          <Heading size="sm">Your Deposits</Heading>
+          <Text>STX: {deposits.STX}</Text>
+          <Text>sBTC: {deposits.sBTC}</Text>
+        </Box>
+      </VStack>
+    </Box>
   );
 }
 

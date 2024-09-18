@@ -69,7 +69,7 @@ Libre is a decentralized finance (DeFi) project built on the Stacks blockchain, 
 
 ```
 cd contracts
-clarinet test tests/libre-token-test.ts
+clarinet test tests/libre-test.ts
 clarinet test tests/price-oracle-test.ts
 ```
 
